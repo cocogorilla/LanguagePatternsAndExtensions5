@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguagePatternsAndExtensions.Tests", "LanguagePatternsAndExtensions.Tests\LanguagePatternsAndExtensions.Tests.csproj", "{21FC3113-65B5-44B4-B49C-ADDF144F0685}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguagePatternsAndExtensions", "LanguagePatternsAndExtensions\LanguagePatternsAndExtensions.csproj", "{0697920E-C29D-4109-B290-3EDA7CC2460A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{21FC3113-65B5-44B4-B49C-ADDF144F0685}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21FC3113-65B5-44B4-B49C-ADDF144F0685}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21FC3113-65B5-44B4-B49C-ADDF144F0685}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21FC3113-65B5-44B4-B49C-ADDF144F0685}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0697920E-C29D-4109-B290-3EDA7CC2460A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0697920E-C29D-4109-B290-3EDA7CC2460A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0697920E-C29D-4109-B290-3EDA7CC2460A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0697920E-C29D-4109-B290-3EDA7CC2460A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

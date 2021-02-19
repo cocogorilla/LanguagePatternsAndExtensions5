@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>$id$</id>
+        <version>$version$</version>
+        <title>$title$</title>
+        <authors>Ethan Nelson</authors>
+        <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Simple repetitivley used LINQ extensions</description>
+        <copyright>Copyright 2016</copyright>
+        <tags>LINQ extensions</tags>
+    </metadata>
+</package>
