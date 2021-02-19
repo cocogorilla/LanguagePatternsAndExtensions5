@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31005.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LanguagePatternsAndExtensions", "LanguagePatternsAndExtensions\LanguagePatternsAndExtensions.csproj", "{D00EA707-BCBE-40E7-BACA-06E0C2C271AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguagePatternsAndExtensions.Tests", "LanguagePatternsAndExtensions.Tests\LanguagePatternsAndExtensions.Tests.csproj", "{0A8B1239-40C7-49EE-B6A7-5322CC735B3C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D00EA707-BCBE-40E7-BACA-06E0C2C271AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D00EA707-BCBE-40E7-BACA-06E0C2C271AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D00EA707-BCBE-40E7-BACA-06E0C2C271AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D00EA707-BCBE-40E7-BACA-06E0C2C271AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A8B1239-40C7-49EE-B6A7-5322CC735B3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A8B1239-40C7-49EE-B6A7-5322CC735B3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A8B1239-40C7-49EE-B6A7-5322CC735B3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A8B1239-40C7-49EE-B6A7-5322CC735B3C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B197B1BE-0062-419D-A859-3FF28CA5E35E}
+	EndGlobalSection
+EndGlobal
