@@ -26,12 +26,11 @@ namespace LanguagePatternsAndExtensions
             {
                 if (!_initialized || _expirationDecider(_instance) || forceRefresh)
                 {
-                    if (!_initialized)
-                        _initialized = true;
                     var result = await _receiverAsync();
                     if (result == null)
                         throw new LifeTimeManagerException("retrieval of the instance was null: null is not a supported value for lifetime management");
                     _instance = result;
+                    _initialized = true;
                 }
             }
             finally
