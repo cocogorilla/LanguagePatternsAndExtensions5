@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>3.2.6</Version>
+    <Version>3.2.7</Version>
     <PackageId>LanguagePatternsAndExtensions5</PackageId>
     <Authors>Ethan Nelson</Authors>
     <Company />
     <Product />
-    <Description>LanguagePatternsAndExtensions compiled for .net Core (.NET 5)</Description>
+    <Description>LanguagePatternsAndExtensions compiled for .net Core (.NET 5/6)</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
