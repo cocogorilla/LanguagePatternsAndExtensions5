@@ -10,5 +10,10 @@
         <description>Simple repetitively used LINQ extensions</description>
         <copyright>Copyright 2016</copyright>
         <tags>LINQ extensions</tags>
+        <dependencies>
+            <group targetFramework="netcoreapp3.1" />
+            <group targetFramework="net5.0" />
+            <group targetFramework="net6.0" />
+        </dependencies>
     </metadata>
 </package>
