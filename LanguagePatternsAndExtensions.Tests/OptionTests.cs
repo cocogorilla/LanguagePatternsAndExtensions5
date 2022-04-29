@@ -1,11 +1,8 @@
 using System;
-using System.CodeDom;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using AutoFixture;
 using Xunit;
-using Xunit.Sdk;
 using static LanguagePatternsAndExtensions.Option<string>;
 
 namespace LanguagePatternsAndExtensions.Tests
@@ -47,6 +44,36 @@ namespace LanguagePatternsAndExtensions.Tests
             Assert.NotEqual("test".ToOption(), string.Empty.ToOption());
             Assert.Equal("test".ToOption(), "test".ToOption());
             Assert.Equal("test".ToOption(), Some("test"));
+        }
+
+        [Theory, Gen]
+        public void CanExitEarlyForSuccess(
+            string fail,
+            TestClass expected)
+        {
+            var sut = expected.ToOption();
+
+            TestClass actual;
+
+            if (sut.IsSome)
+                actual = sut.GetValue(x => x);
+            else
+                actual = null;
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void GetValueIsUnsafeAndCanCatastrophicallyFail()
+        {
+            var a = ((string)null).ToOption();
+
+            var actual = Record.Exception(() =>
+            {
+                var fail = a.GetValue(x => x.ToUpper());
+            });
+
+            Assert.IsType<NullReferenceException>(actual);
         }
 
         [Theory, Gen]

@@ -1,13 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LanguagePatternsAndExtensions
 {
     public static class OutcomeExtensions
     {
+        public static Outcome<TResult> Select<TSource, TResult>(
+            this Outcome<TSource> outcome,
+            Func<TSource, TResult> selector)
+        {
+            return outcome
+                .Traverse(
+                    source => Success.Of(selector(source)),
+                    Failure.Nok<TResult>);
+        }
+
         public static Outcome<TResult> SelectMany<TSource, TResult>(
             this Outcome<TSource> source,
             Func<TSource, Outcome<TResult>> selector)

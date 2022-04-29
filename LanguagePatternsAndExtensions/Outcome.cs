@@ -76,6 +76,34 @@ namespace LanguagePatternsAndExtensions
             return Unit.Default;
         }
 
+        /// <summary>
+        /// Unsafe, directly retrieve a value assuming it is not null and apply a func transform
+        /// Example: var theValue = outcome.GetValue(x => x);
+        /// theValue may be null
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="transform"></param>
+        /// <returns></returns>
+        public TResult GetValue<TResult>(Func<TValue, TResult> transform)
+        {
+            if (Succeeded)
+                return transform(Value);
+            throw new OutcomeWasNotSuccessException();
+        }
+
+        /// <summary>
+        /// Unsafe, the outcome may not be in an error state
+        /// Example: var theError = outcome.GetError();
+        /// theError may be empty
+        /// </summary>
+        /// <returns></returns>
+        public string GetError()
+        {
+            if (!Succeeded)
+                return ErrorMessage;
+            throw new OutcomeWasNotFailureException();
+        }
+
         private readonly TValue Value;
         public string ErrorMessage { get; }
         public bool Succeeded { get; }

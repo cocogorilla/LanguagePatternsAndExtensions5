@@ -74,6 +74,60 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
+        public void CanExitEarlyForSuccess(
+            string fail,
+            TestClass expected)
+        {
+            var sut = Success.Of(expected);
+
+            TestClass actual;
+
+            if (sut.Succeeded)
+                actual = sut.GetValue(x => x);
+            else
+                actual = null;
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory, Gen]
+        public void CanExitEarlyForFailure(
+            string fail)
+        {
+            var a = new Outcome<int>(fail);
+
+            var actual = a.GetError();
+
+            Assert.Equal(fail, actual);
+        }
+
+        [Theory, Gen]
+        public void GettingSuccessFromErrorIsUnsafeAndThrows(
+            string fail)
+        {
+            var actual = Record.Exception(() =>
+            {
+                var sut = Failure.Nok<int>(fail);
+                var result = sut.GetValue(x => x);
+            });
+
+            Assert.IsType<OutcomeWasNotSuccessException>(actual);
+        }
+
+        [Theory, Gen]
+        public void GettingErrorFromSuccessIsUnsafeAndThrows(
+            string success)
+        {
+            var actual = Record.Exception(() =>
+            {
+                var sut = Success.Of(success);
+                var result = sut.GetError();
+            });
+
+            Assert.IsType<OutcomeWasNotFailureException>(actual);
+        }
+
+        [Theory, Gen]
         public void SuccessIsGuarded(
             GuardClauseAssertion assertion)
         {
@@ -341,6 +395,43 @@ namespace LanguagePatternsAndExtensions.Tests
             var ob = Failure.Nok<Unit>(errorMessage2);
             Assert.True(oa != ob);
             Assert.True(!oa.Equals(ob));
+        }
+
+        [Theory, Gen]
+        public void SimpleSelectSuccess(
+            int expected)
+        {
+            var a = Success.Of(expected);
+
+            var actual = a.Select(x => x + 1);
+
+            Assert.Equal(Success.Of(expected + 1), actual);
+        }
+
+        [Theory, Gen]
+        public void SimpleSelectSuccessQueryForm(
+            int expected)
+        {
+            var a = Success.Of(expected);
+
+            var actual =
+                from aa in a
+                select aa + 1;
+
+            Assert.Equal(Success.Of(expected + 1), actual);
+        }
+
+        [Theory, Gen]
+        public void SimpleSelectFailureQueryForm(
+            string expectedError)
+        {
+            var a = Failure.Nok<int>(expectedError);
+
+            var actual =
+                from aa in a
+                select aa + 1;
+
+            Assert.Equal(Failure.Nok<int>(expectedError), actual);
         }
 
         [Theory, Gen]
