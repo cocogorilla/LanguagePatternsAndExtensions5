@@ -44,6 +44,15 @@ namespace LanguagePatternsAndExtensions
                 : nothing;
         }
 
+        public TResult Match<TResult>(Func<TResult> nothing, Func<T, TResult> some)
+        {
+            if (nothing == null) throw new ArgumentNullException(nameof(nothing));
+            if (some == null) throw new ArgumentNullException(nameof(some));
+            return (IsSome)
+                ? some(_item)
+                : nothing();
+        }
+
         /// <summary>
         /// Unsafe, directly retrieve a value assuming it is not null and apply a func transform
         /// Example: var theValue = optional.GetValue(x => x);

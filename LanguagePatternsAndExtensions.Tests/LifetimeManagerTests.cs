@@ -20,7 +20,7 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public async void NewObjectIsGeneratedForFirstCall(
+        public async Task NewObjectIsGeneratedForFirstCall(
             TestObject expected,
             IFixture fixture)
         {
@@ -32,7 +32,7 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public async void NewObjectIsGeneratedOnlyOnceOnFirstCall(
+        public async Task NewObjectIsGeneratedOnlyOnceOnFirstCall(
             IFixture fixture)
         {
             var callCount = 0;
@@ -48,7 +48,7 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public async void SameObjectIsGeneratedWhenNotExpired(
+        public async Task SameObjectIsGeneratedWhenNotExpired(
             TestObject expected,
             IFixture fixture)
         {
@@ -68,7 +68,7 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public async void NewObjectIsGeneratedWhenIsExpired(
+        public async Task NewObjectIsGeneratedWhenIsExpired(
             int expiresAt,
             TestObject oldObject,
             TestObject newObject,
@@ -94,7 +94,7 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public async void InstancesThrowWhenNullIsReturned(
+        public async Task InstancesThrowWhenNullIsReturned(
             IFixture fixture)
         {
             fixture.Inject<Func<Task<string>>>(
@@ -104,7 +104,7 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public async void NewObjectIsGeneratedWhenForciblyUpdated(
+        public async Task NewObjectIsGeneratedWhenForciblyUpdated(
             TestObject oldObject,
             TestObject newObject,
             IFixture fixture)
