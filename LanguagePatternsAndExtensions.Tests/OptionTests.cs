@@ -14,6 +14,74 @@ namespace LanguagePatternsAndExtensions.Tests
 
     public class OptionTests
     {
+        [Fact]
+        public void CanPatternMatchOnSome()
+        {
+            var nonNullInput = Guid.NewGuid().ToString();
+            var some = nonNullInput.ToOption();
+
+            var actual = some switch
+            {
+                (true, var value) => value,
+                _ => throw new Exception("should not arrive")
+            };
+
+            Assert.Equal(nonNullInput, actual);
+        }
+
+        [Fact]
+        public void CanPatternMatchOnEmptyNone()
+        {
+            var empty = ((string)null).ToOption();
+            var actual = empty switch
+            {
+                (false, _) => "empty",
+                _ => throw new Exception("should not arrive")
+            };
+            Assert.Equal("empty", actual);
+        }
+
+        [Fact]
+        public void SomeIsTrue()
+        {
+            var nonNullInput = Guid.NewGuid().ToString();
+            var some = nonNullInput.ToOption();
+            if (some)
+            {
+                Assert.True(some.IsSome);
+            }
+            else
+            {
+                Assert.Fail("should not be none");
+            }
+        }
+
+        [Fact]
+        public void NoneIsFalse()
+        {
+            var empty = ((string)null).ToOption();
+            if (empty)
+            {
+                Assert.Fail("should not be some");
+            }
+            else
+            {
+                Assert.True(empty.IsNone);
+            }
+        }
+
+        [Fact]
+        public void CanLiftTsIntoOptions()
+        {
+            var nonnullstring = Guid.NewGuid().ToString();
+            var nullstring = (string)null;
+
+            Option<string> some = nonnullstring;
+            Option<string> none = nullstring;
+
+            Assert.Equal(nonnullstring, some.GetValue(x => x));
+            Assert.Equal(None(), none);
+        }
 
         [Fact]
         public void OptionUsesAreCorrect()
@@ -54,7 +122,6 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public void CanExitEarlyForSuccess(
-            string fail,
             TestClass expected)
         {
             var sut = expected.ToOption();

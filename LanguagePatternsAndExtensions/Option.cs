@@ -2,7 +2,7 @@
 
 namespace LanguagePatternsAndExtensions
 {
-    public struct Option<T>
+    public readonly struct Option<T>
     {
         private readonly T _item;
 
@@ -21,18 +21,6 @@ namespace LanguagePatternsAndExtensions
 
         public bool IsSome { get; }
         public bool IsNone => !IsSome;
-
-        public static Option<T> Some(T source)
-        {
-            return source == null
-                ? None()
-                : new Option<T>(source);
-        }
-
-        public static Option<T> None()
-        {
-            return new Option<T>(Unit.Default);
-        }
 
         public TResult Match<TResult>(TResult nothing, Func<T, TResult> some)
         {
@@ -65,5 +53,28 @@ namespace LanguagePatternsAndExtensions
         {
             return transform(_item);
         }
+        public static Option<T> Some(T source)
+        {
+            return source == null
+                ? None()
+                : new Option<T>(source);
+        }
+
+        public static Option<T> None()
+        {
+            return new Option<T>(Unit.Default);
+        }
+
+        public static bool operator true(Option<T> option) => option.IsSome;
+        public static bool operator false(Option<T> option) => !option.IsSome;
+
+
+        public void Deconstruct(out bool isSome, out T item)
+        {
+            isSome = IsSome;
+            item = _item;
+        }
+
+        public static implicit operator Option<T>(T value) => value is null ? None() : new Option<T>(value);
     }
 }

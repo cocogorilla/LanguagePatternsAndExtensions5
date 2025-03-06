@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace LanguagePatternsAndExtensions
 {
-    public struct Outcome<TValue> : IEquatable<Outcome<TValue>>
+    public readonly struct Outcome<TValue> : IEquatable<Outcome<TValue>>
     {
         public bool Equals(Outcome<TValue> other)
         {
