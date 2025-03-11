@@ -1,10 +1,9 @@
 ﻿using System;
 
-namespace LanguagePatternsAndExtensions
+namespace LanguagePatternsAndExtensions;
+
+public class LifeTimeManagerException : Exception
 {
-    public class LifeTimeManagerException : Exception
-    {
-        public LifeTimeManagerException(string message) : base(message)
-        { }
-    }
+    public LifeTimeManagerException(string message) : base(message)
+    { }
 }

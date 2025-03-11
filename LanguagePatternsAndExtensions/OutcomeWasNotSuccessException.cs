@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace LanguagePatternsAndExtensions
+namespace LanguagePatternsAndExtensions;
+
+public class OutcomeWasNotSuccessException : Exception
 {
-    public class OutcomeWasNotSuccessException : Exception
+    public OutcomeWasNotSuccessException() : base("using GetValue on Outcome type was improperly interpreted as a success when in error state")
     {
-        public OutcomeWasNotSuccessException() : base("using GetValue on Outcome type was improperly interpreted as a success when in error state")
-        {
             
         }
-    }
 }
