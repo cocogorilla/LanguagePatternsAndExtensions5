@@ -91,11 +91,11 @@ public class OptionTests
         var nullstring = (string)null;
         var sut = nonnullstring.ToOption();
         var outcome = sut.Match(
-            x => x, "");
+            some: x => x, nothing: "");
         var outcomeNoneOverload = nullstring.ToOption().Match(
-            x => x, () => "overloadednone");
+            some: x => x, none: () => "overloadednone");
         var outcomeSomeOverload = sut.Match(
-            x => x, () => throw new Exception("should not arrive"));
+            some: x => x, none: () => throw new Exception("should not arrive"));
         var apples = "apples".ToOption();
         Assert.Equal("apples", apples.GetValue(x => x));
         Assert.Throws<NullReferenceException>(() =>

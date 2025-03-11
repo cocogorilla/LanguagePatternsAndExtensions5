@@ -14,8 +14,8 @@ public static class OptionExtensions
         Func<TSource, Option<TResult>> selector)
     {
         return source.Match(
-            selector,
-            Option<TResult>.None());
+            some: selector,
+            nothing: Option<TResult>.None());
     }
 
     public static Option<TResult> SelectMany<TSource, TIntermediate, TResult>(
@@ -24,14 +24,14 @@ public static class OptionExtensions
         Func<TSource, TIntermediate, TResult> selector)
     {
         return source.Match(
-            x =>
+            some: x =>
             {
                 var elem = intermediate(x);
                 return elem.Match(
-                    y => selector(x, y).ToOption(),
-                    Option<TResult>.None());
+                    some: y => selector(x, y).ToOption(),
+                    nothing: Option<TResult>.None());
             },
-            Option<TResult>.None());
+            nothing: Option<TResult>.None());
     }
 
     public static Option<T> ToOption<T>(this T? item) where T : struct

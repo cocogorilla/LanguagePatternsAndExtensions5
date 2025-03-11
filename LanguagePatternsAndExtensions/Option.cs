@@ -22,7 +22,7 @@ public readonly struct Option<T>
     public bool IsSome { get; }
     public bool IsNone => !IsSome;
 
-    public TResult Match<TResult>(Func<T, TResult> some, TResult nothing)
+    public TResult Match<TResult>(TResult nothing, Func<T, TResult> some)
     {
         if (nothing == null) throw new ArgumentNullException(nameof(nothing));
         if (some == null) throw new ArgumentNullException(nameof(some));
@@ -32,7 +32,7 @@ public readonly struct Option<T>
             : nothing;
     }
 
-    public TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
+    public TResult Match<TResult>(Func<TResult> none, Func<T, TResult> some)
     {
         if (none == null) throw new ArgumentNullException(nameof(none));
         if (some == null) throw new ArgumentNullException(nameof(some));
