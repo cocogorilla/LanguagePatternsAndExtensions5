@@ -1,7 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using AutoFixture;
+﻿using AutoFixture;
 using AutoFixture.Idioms;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Moq;
 using Xunit;
 
 namespace LanguagePatternsAndExtensions.Tests;
@@ -10,6 +13,20 @@ public class OutcomeTests
 {
     [Theory, Gen]
     public void SuccessContainsExpectedValueForQuery(
+        Guid expected,
+        string successValue)
+    {
+        var sut = Success.Of(expected);
+        var result = sut.Match(x =>
+        {
+            Assert.Equal(expected, x);
+            return successValue;
+        }, x => throw new Exception("should not be in this case"));
+        Assert.Equal(result, successValue);
+    }
+
+    [Theory, Gen]
+    public void SuccessContainsExpectedValueForQueryTraverse(
         Guid expected,
         string successValue)
     {
@@ -27,6 +44,17 @@ public class OutcomeTests
         Guid expected)
     {
         var sut = Success.Of(expected);
+        sut.Match(x =>
+        {
+            Assert.Equal(expected, x);
+        }, x => throw new Exception("should not be in this case"));
+    }
+
+    [Theory, Gen]
+    public void SuccessContainsExpectedValueForCommandTraverse(
+        Guid expected)
+    {
+        var sut = Success.Of(expected);
         sut.Traverse(x =>
         {
             Assert.Equal(expected, x);
@@ -41,12 +69,49 @@ public class OutcomeTests
         Assert.Empty(sut.ErrorMessage);
     }
 
+    [Fact]
+    public void OverloadResolutionSuccessFailure()
+    {
+        var inputString = "this is a successful value";
+
+        var actual = Success.Of(inputString);
+
+        Assert.True(actual.Succeeded);
+    }
+
+    [Fact]
+    public void FailureMessageCannotBeEmptyOrWhiteSpace()
+    {
+        string[] inputs = ["", "  "];
+
+        foreach (var input in inputs)
+        {
+            Assert.Throws<ArgumentException>(() => Failure.Nok<string>(input));
+        }
+    }
+
+    [Fact]
+    public void SuccessBitIsCorrect()
+    {
+        var input = Outcome<int>.Success(42);
+        Assert.True(input.IsSuccess);
+        Assert.False(input.IsFailure);
+    }
+
+    [Fact]
+    public void FailureBitIsCorrect()
+    {
+        var input = Outcome<int>.Failure("test");
+        Assert.False(input.IsSuccess);
+        Assert.True(input.IsFailure);
+    }
+
     [Theory, Gen]
     public void FailureMessageIsExpectedForQuery(
         string customError)
     {
         var sut = Failure.Nok<int>(customError);
-        var result = sut.Traverse(x => throw new Exception("should not be in this case"),
+        var result = sut.Match(x => throw new Exception("should not be in this case"),
             (x) =>
             {
                 Assert.Equal(customError, x);
@@ -60,7 +125,7 @@ public class OutcomeTests
         string expected)
     {
         var sut = Failure.Nok<int>(expected);
-        sut.Traverse(x => throw new Exception("should not be in this case"),
+        sut.Match(x => throw new Exception("should not be in this case"),
             (x) =>
             {
                 Assert.Equal(expected, x);
@@ -95,7 +160,7 @@ public class OutcomeTests
     public void CanExitEarlyForFailure(
         string fail)
     {
-        var a = new Outcome<int>(fail);
+        var a = Outcome<int>.Failure(fail);
 
         var actual = a.GetError();
 
@@ -112,7 +177,7 @@ public class OutcomeTests
             var result = sut.GetValue(x => x);
         });
 
-        Assert.IsType<OutcomeWasNotSuccessException>(actual);
+        Assert.IsType<InvalidOperationException>(actual);
     }
 
     [Theory, Gen]
@@ -125,21 +190,7 @@ public class OutcomeTests
             var result = sut.GetError();
         });
 
-        Assert.IsType<OutcomeWasNotFailureException>(actual);
-    }
-
-    [Theory, Gen]
-    public void SuccessIsGuarded(
-        GuardClauseAssertion assertion)
-    {
-        assertion.Verify(typeof(Success).GetMethod(nameof(Success.Of)));
-    }
-
-    [Theory, Gen]
-    public void FailureIsGuarded(
-        GuardClauseAssertion assertion)
-    {
-        assertion.Verify(typeof(Failure).GetMethod(nameof(Failure.Nok)));
+        Assert.IsType<InvalidOperationException>(actual);
     }
 
     [Theory, Gen]
@@ -179,9 +230,9 @@ public class OutcomeTests
     {
         var expected = Failure.Nok<Unit>(expectedMessage);
         var actual = Failure.Nok<Unit>(expectedMessage);
-        expected.Traverse(x => { }, x =>
+        expected.Match(x => { }, x =>
         {
-            actual.Traverse(y => { }, y =>
+            actual.Match(y => { }, y =>
             {
                 Assert.Equal(x, y);
             });
@@ -198,10 +249,27 @@ public class OutcomeTests
     }
 
     [Theory, Gen]
+    public void OutcomeEqualitySuccessGenericIsCorrect(string value)
+    {
+        var oa = Success.Of<string, string>(value);
+        var ob = Success.Of<string, string>(value);
+        Assert.True(oa == ob);
+        Assert.True(oa.Equals(ob));
+    }
+
+    [Theory, Gen]
     public void HashCodeEqualityComparisonForSuccessIsCorrect(string value)
     {
         var a = Success.Of(value);
         var b = Success.Of(value);
+        Assert.True(a.GetHashCode() == b.GetHashCode());
+    }
+
+    [Theory, Gen]
+    public void HashCodeEqualityComparisonForSuccessGenericIsCorrect(string value)
+    {
+        var a = Success.Of<string, string>(value);
+        var b = Success.Of<string, string>(value);
         Assert.True(a.GetHashCode() == b.GetHashCode());
     }
 
@@ -214,10 +282,26 @@ public class OutcomeTests
     }
 
     [Theory, Gen]
+    public void HashCodeInEqualityComparisonForSuccessGenericIsCorrect(string value, string value2)
+    {
+        var a = Success.Of<string, string>(value);
+        var b = Success.Of<string, string>(value2);
+        Assert.False(a.GetHashCode() == b.GetHashCode());
+    }
+
+    [Theory, Gen]
     public void HashCodeEqualityComparisonForFailureIsCorrect(string error)
     {
         var a = Failure.Nok<string>(error);
         var b = Failure.Nok<string>(error);
+        Assert.True(a.GetHashCode() == b.GetHashCode());
+    }
+
+    [Theory, Gen]
+    public void HashCodeEqualityComparisonGenericForFailureIsCorrect(string error)
+    {
+        var a = Failure.Nok<string, string>(error);
+        var b = Failure.Nok<string, string>(error);
         Assert.True(a.GetHashCode() == b.GetHashCode());
     }
 
@@ -230,10 +314,26 @@ public class OutcomeTests
     }
 
     [Theory, Gen]
+    public void HashCodeInEqualityComparisonGenericForFailureIsCorrect(string error, string error2)
+    {
+        var a = Failure.Nok<int, string>(error);
+        var b = Failure.Nok<int, string>(error2);
+        Assert.False(a.GetHashCode() == b.GetHashCode());
+    }
+
+    [Theory, Gen]
     public void HashCodeEqualityComparisonOnErrorMessageForFailureIsCorrect(string error, string error2)
     {
         var a = Failure.Nok<decimal>(error);
         var b = Failure.Nok<decimal>(error2);
+        Assert.True(a.GetHashCode() != b.GetHashCode());
+    }
+
+    [Theory, Gen]
+    public void HashCodeEqualityComparisonGenericOnErrorMessageForFailureIsCorrect(string error, string error2)
+    {
+        var a = Failure.Nok<decimal, string>(error);
+        var b = Failure.Nok<decimal, string>(error2);
         Assert.True(a.GetHashCode() != b.GetHashCode());
     }
 
@@ -247,10 +347,28 @@ public class OutcomeTests
     }
 
     [Fact]
+    public void OutcomeUnitEqualityGenericSuccessIsCorrect()
+    {
+        var oa = Success.Of<Unit, string>(Unit.Default);
+        var ob = Success.Of<Unit, string>(Unit.Default);
+        Assert.True(oa == ob);
+        Assert.True(oa.Equals(ob));
+    }
+
+    [Fact]
     public void OutcomeEmptyEqualitySuccessIsCorrect()
     {
         var oa = Success.Ok();
         var ob = Success.Ok();
+        Assert.True(oa == ob);
+        Assert.True(oa.Equals(ob));
+    }
+
+    [Fact]
+    public void OutcomeEmptyEqualityGenericSuccessIsCorrect()
+    {
+        var oa = Success.Ok<string>();
+        var ob = Success.Ok<string>();
         Assert.True(oa == ob);
         Assert.True(oa.Equals(ob));
     }
@@ -260,6 +378,15 @@ public class OutcomeTests
     {
         var oa = Failure.Nok<Guid>(errorMessage);
         var ob = Failure.Nok<Guid>(errorMessage);
+        Assert.True(oa == ob);
+        Assert.True(oa.Equals(ob));
+    }
+
+    [Theory, Gen]
+    public void OutcomeEqualityGenericFailureIsCorrect(string value, int errorMessage)
+    {
+        var oa = Failure.Nok<Guid, int>(errorMessage);
+        var ob = Failure.Nok<Guid, int>(errorMessage);
         Assert.True(oa == ob);
         Assert.True(oa.Equals(ob));
     }
@@ -541,7 +668,7 @@ public class OutcomeTests
             from cc in c
             select new TestClass { Whatever = aa + bb };
 
-        actual.Traverse(
+        actual.Match(
             x => Assert.Equal(one + two, x.Whatever),
             x => throw new Exception("should not get here"));
     }
@@ -624,7 +751,7 @@ public class OutcomeTests
     public async Task CanTraverseAsyncSuccess(
         int initial)
     {
-        var outcome = new Outcome<int>(initial);
+        var outcome = Outcome<int>.Success(initial);
         var successFunc = async (int x) =>
         {
             await Task.Delay(10).ConfigureAwait(false);
@@ -644,7 +771,30 @@ public class OutcomeTests
     }
 
     [Theory, Gen]
-    public async Task CanTraverseAsyncFailure(
+    public async Task CanMatchAsyncSuccess(
+        int initial)
+    {
+        var outcome = Outcome<int>.Success(initial);
+        var successFunc = async (int x) =>
+        {
+            await Task.Delay(10).ConfigureAwait(false);
+            return x * 2;
+        };
+        var errorFunc = async (string error) =>
+        {
+            Assert.Fail("should not error");
+            return default(int);
+        };
+
+        var result = await outcome.MatchAsync(
+            successFunc,
+            errorFunc);
+
+        Assert.Equal(initial * 2, result);
+    }
+
+    [Theory, Gen]
+    public async Task CanMatchAsyncFailure(
         string expectedError)
     {
         var outcome = Failure.Nok<int>(expectedError);
@@ -659,10 +809,174 @@ public class OutcomeTests
             return error.Length;
         };
 
-        var result = await outcome.TraverseAsync(
+        var result = await outcome.MatchAsync(
             successFunc,
             errorFunc);
 
         Assert.Equal(expectedError.Length, result);
+    }
+
+    [Theory, Gen]
+    public void CanUseSuccessPathWithCustomError(
+        string input,
+        string expected,
+        Mock<Func<string, Outcome<int, CustomError>>> op1,
+        Mock<Func<string, Outcome<int, CustomError>>> op2,
+        Mock<Func<string, Outcome<int, CustomError>>> op3,
+        CustomError error)
+    {
+        op1.Setup(x => x(It.IsAny<string>())).Returns(Outcome<int, CustomError>.Success(1));
+        op2.Setup(x => x(It.IsAny<string>())).Returns(Outcome<int, CustomError>.Success(2));
+        op3.Setup(x => x(It.IsAny<string>())).Returns(Outcome<int, CustomError>.Success(3));
+
+        var actual = from a in op1.Object(input)
+                     from b in op2.Object(a.ToString())
+                     from c in op3.Object(b.ToString())
+                     select c;
+
+        Assert.Equal(Success.Of<int, CustomError>(3), actual);
+        op1.Verify(x => x(input), Times.Once);
+        op2.Verify(x => x(1.ToString()), Times.Once);
+        op3.Verify(x => x(2.ToString()), Times.Once);
+    }
+
+    [Theory, Gen]
+    public void CanUseCustomErrorPath(
+        string input,
+        Mock<Func<string, Outcome<int, CustomError>>> op1,
+        Mock<Func<string, Outcome<int, CustomError>>> op2,
+        Mock<Func<string, Outcome<int, CustomError>>> op3,
+        CustomError error)
+    {
+        op1.Setup(x => x(It.IsAny<string>())).Returns(Outcome<int, CustomError>.Success(1));
+        op2.Setup(x => x(It.IsAny<string>())).Returns(Outcome<int, CustomError>.Failure(error));
+        op3.Setup(x => x(It.IsAny<string>())).Returns(Outcome<int, CustomError>.Success(3));
+
+        var actual = from a in op1.Object(input)
+                     from b in op2.Object(a.ToString())
+                     from c in op3.Object(b.ToString())
+                     select c;
+
+        Assert.Equal(Failure.Nok<int, CustomError>(error), actual);
+        op1.Verify(x => x(input), Times.Once);
+        op2.Verify(x => x(1.ToString()), Times.Once);
+        op3.Verify(x => x(It.IsAny<string>()), Times.Never);
+    }
+
+    [Theory, Gen]
+    public void CanCustomErrorPathString(
+        string input,
+        string error)
+    {
+        var actual = Failure.Nok<string, string>(error);
+
+        Assert.Equal(error, actual.Match(x => "no match", x => x));
+    }
+
+    [Theory, Gen]
+    public void TwoOutcomesEqualIsSuccess(
+        TestClass input)
+    {
+        var input2 = input;
+        var a = Outcome<TestClass, CustomError>.Success(input);
+        var b = Outcome<TestClass, CustomError>.Success(input2);
+
+        Assert.Equal(a, b);
+    }
+
+    [Theory, Gen]
+    public void TwoOutcomesNotEqualIsSuccess(
+        TestClass input,
+        TestClass input2)
+    {
+        var a = Outcome<TestClass, CustomError>.Success(input);
+        var b = Outcome<TestClass, CustomError>.Success(input2);
+
+        Assert.NotEqual(a, b);
+    }
+
+    [Theory, Gen]
+    public void TwoOutcomesFailureEqualIsSuccess(
+        CustomError input)
+    {
+        var input2 = input;
+        var a = Outcome<TestClass, CustomError>.Failure(input);
+        var b = Outcome<TestClass, CustomError>.Failure(input2);
+
+        Assert.Equal(a, b);
+    }
+
+    [Theory, Gen]
+    public void TwoOutcomesFailureNotEqualIsSuccess(
+        CustomError input,
+        CustomError input2)
+    {
+        var a = Outcome<TestClass, CustomError>.Failure(input);
+        var b = Outcome<TestClass, CustomError>.Failure(input2);
+
+        Assert.NotEqual(a, b);
+    }
+
+    [Fact]
+    public void MatchAndSuccessForUnit()
+    {
+        var actual = Success.Ok<string>();
+
+        Assert.True(actual.Succeeded);
+        Assert.True(actual.IsSuccess);
+        Assert.False(actual.IsFailure);
+    }
+
+    [Theory, Gen]
+    public void MatchAndFailForUnit(
+        string error)
+    {
+        var actual = Failure.Nok<Unit>(error);
+
+        Assert.False(actual.Succeeded);
+        Assert.False(actual.IsSuccess);
+        Assert.True(actual.IsFailure);
+    }
+
+    [Theory, Gen]
+    public void ActionMatching(
+        string expected)
+    {
+        var container = new List<string>();
+        var sut = Outcome<string, CustomError>.Success(expected);
+
+        sut.Match(
+            x => container.Add(x),
+            _ => Assert.Fail("not this one"));
+
+        Assert.Equal(expected, container.Single());
+    }
+
+    [Theory, Gen]
+    public async Task AsyncMatchingSuccess(
+        string expected)
+    {
+        var successFunc = async (string x) => expected;
+        var failFunc = async (string error) => "not expected";
+        var input = Success.Of<string, string>("input");
+
+        var actual = await input.MatchAsync(
+            successFunc, failFunc);
+
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory, Gen]
+    public async Task AsyncMatchingFailure(
+        string expected)
+    {
+        var successFunc = async (string x) => "not expected";
+        var failFunc = async (string error) => expected;
+        var input = Failure.Nok<string, string>("input");
+
+        var actual = await input.MatchAsync(
+            successFunc, failFunc);
+
+        Assert.Equal(expected, actual);
     }
 }
