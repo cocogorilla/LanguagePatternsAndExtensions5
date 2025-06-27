@@ -2,7 +2,7 @@
 
 namespace LanguagePatternsAndExtensions;
 
-public readonly struct Option<T>
+public readonly struct Option<T> where T : notnull
 {
     private readonly T _item;
 
@@ -15,7 +15,7 @@ public readonly struct Option<T>
 
     public Option(Unit none)
     {
-        _item = default;
+        _item = default!;
         IsSome = false;
     }
 

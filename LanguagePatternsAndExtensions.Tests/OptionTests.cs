@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using AutoFixture;
 using Xunit;
 using static LanguagePatternsAndExtensions.Option<string>;
@@ -318,5 +320,17 @@ public class OptionTests
         Assert.Equal(Option<int>.None(), nullint.ToOption());
         Assert.Equal(nonnullint, nonnullint.Value.ToOption().GetValue(x => x));
         Assert.Equal(zeroint, zeroint.Value.ToOption().GetValue(x => x));
+    }
+
+    [Fact]
+    public void NullableTypesTurnIntoNonNullableOptions()
+    {
+        var claimsPrincipal = new ClaimsPrincipal();
+        var missingClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == "not present").ToOption();
+
+        Assert.True(missingClaim.IsNone);
+        Assert.False(missingClaim.IsSome);
+        // assert the internal type is not nullable
+        Assert.IsType<Option<Claim>>(missingClaim);
     }
 }

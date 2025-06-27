@@ -17,7 +17,7 @@ public readonly struct Outcome<TValue> : IEquatable<Outcome<TValue>>
                && Succeeded == other.Succeeded;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (ReferenceEquals(null, obj)) return false;
         return obj is Outcome<TValue> outcome && Equals(outcome);
@@ -206,7 +206,7 @@ public readonly struct Outcome<TSuccess, TFailure> : IEquatable<Outcome<TSuccess
     /// </summary>
     /// <param name="obj">The object to compare with.</param>
     /// <returns>True if the object is an Outcome with the same success state and equivalent values.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (ReferenceEquals(null, obj)) return false;
         return obj is Outcome<TSuccess, TFailure> outcome && Equals(outcome);
