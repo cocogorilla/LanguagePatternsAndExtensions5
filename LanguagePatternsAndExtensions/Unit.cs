@@ -16,7 +16,7 @@ public struct Unit : IEquatable<Unit>
         0;
 
     [Pure]
-    public override bool Equals(object obj) =>
+    public override bool Equals(object? obj) =>
         obj is Unit;
 
     [Pure]

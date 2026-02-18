@@ -12,7 +12,7 @@ public class LifeTimeManager<T>
 {
     private readonly Func<Task<T>> _receiverAsync;
     private readonly Func<T, bool> _expirationDecider;
-    private T _instance;
+    private T _instance = default!;
     private bool _initialized = false;
     private readonly SemaphoreSlim _semaphoreSlim;
 

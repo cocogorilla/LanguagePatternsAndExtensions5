@@ -980,4 +980,124 @@ public class OutcomeTests
 
         Assert.Equal(expected, actual);
     }
+
+    // Map tests (Outcome<TValue>)
+
+    [Theory, Gen]
+    public void MapTransformsSuccessValue(int input)
+    {
+        var sut = Success.Of(input);
+
+        var actual = sut.Map(x => x * 2);
+
+        Assert.Equal(Success.Of(input * 2), actual);
+    }
+
+    [Theory, Gen]
+    public void MapPreservesFailure(string error)
+    {
+        var sut = Failure.Nok<int>(error);
+
+        var actual = sut.Map(x => x * 2);
+
+        Assert.Equal(Failure.Nok<int>(error), actual);
+    }
+
+    // Bind tests (Outcome<TValue>)
+
+    [Theory, Gen]
+    public void BindChainsSuccessToSuccess(int input)
+    {
+        var sut = Success.Of(input);
+
+        var actual = sut.Bind(x => Success.Of(x.ToString()));
+
+        Assert.Equal(Success.Of(input.ToString()), actual);
+    }
+
+    [Theory, Gen]
+    public void BindChainsSuccessToFailure(int input, string error)
+    {
+        var sut = Success.Of(input);
+
+        var actual = sut.Bind<int, string>(_ => Failure.Nok<string>(error));
+
+        Assert.Equal(Failure.Nok<string>(error), actual);
+    }
+
+    [Theory, Gen]
+    public void BindShortCircuitsOnFailure(string error)
+    {
+        var sut = Failure.Nok<int>(error);
+        bool called = false;
+
+        var actual = sut.Bind(x =>
+        {
+            called = true;
+            return Success.Of(x.ToString());
+        });
+
+        Assert.False(called);
+        Assert.Equal(Failure.Nok<string>(error), actual);
+    }
+
+    // Map tests (Outcome<TSuccess, TFailure>)
+
+    [Theory, Gen]
+    public void MapGenericTransformsSuccessValue(int input)
+    {
+        var sut = Outcome<int, CustomError>.Success(input);
+
+        var actual = sut.Map(x => x.ToString());
+
+        Assert.Equal(Success.Of<string, CustomError>(input.ToString()), actual);
+    }
+
+    [Theory, Gen]
+    public void MapGenericPreservesFailure(CustomError error)
+    {
+        var sut = Outcome<int, CustomError>.Failure(error);
+
+        var actual = sut.Map(x => x.ToString());
+
+        Assert.Equal(Failure.Nok<string, CustomError>(error), actual);
+    }
+
+    // Bind tests (Outcome<TSuccess, TFailure>)
+
+    [Theory, Gen]
+    public void BindGenericChainsSuccessToSuccess(int input)
+    {
+        var sut = Outcome<int, CustomError>.Success(input);
+
+        var actual = sut.Bind(x => Outcome<string, CustomError>.Success(x.ToString()));
+
+        Assert.Equal(Success.Of<string, CustomError>(input.ToString()), actual);
+    }
+
+    [Theory, Gen]
+    public void BindGenericChainsSuccessToFailure(int input, CustomError error)
+    {
+        var sut = Outcome<int, CustomError>.Success(input);
+
+        var actual = sut.Bind<int, CustomError, string>(_ => Outcome<string, CustomError>.Failure(error));
+
+        Assert.Equal(Failure.Nok<string, CustomError>(error), actual);
+    }
+
+    [Theory, Gen]
+    public void BindGenericShortCircuitsOnFailure(CustomError error)
+    {
+        var sut = Outcome<int, CustomError>.Failure(error);
+        bool called = false;
+
+        var actual = sut.Bind(x =>
+        {
+            called = true;
+            return Outcome<string, CustomError>.Success(x.ToString());
+        });
+
+        Assert.False(called);
+        Assert.Equal(Failure.Nok<string, CustomError>(error), actual);
+    }
 }

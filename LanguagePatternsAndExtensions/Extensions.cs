@@ -19,27 +19,32 @@ public static class Extensions
                 yield return item;
         }
 
-    public static T RandomElement<T>(this IEnumerable<T> enumerable)
+    extension<T>(IEnumerable<T> enumerable)
     {
+        public T RandomElement()
+        {
             return enumerable.RandomElementUsing<T>(new Random());
         }
 
-    public static T RandomElementUsing<T>(this IEnumerable<T> enumerable, Random rand)
-    {
+        public T RandomElementUsing(Random rand)
+        {
             var index = rand.Next(0, enumerable.Count());
             return enumerable.ElementAt(index);
         }
+    }
 
-    public static void Iter(this IEnumerable @this, Action<object> act)
+    extension(IEnumerable @this)
     {
+        public void Iter(Action<object> act)
+        {
             foreach (var item in @this)
             {
                 act(item);
             }
         }
 
-    public static void Iter(this IEnumerable @this, Action<object, int> act)
-    {
+        public void Iter(Action<object, int> act)
+        {
             var counter = 0;
             foreach (var item in @this)
             {
@@ -47,30 +52,33 @@ public static class Extensions
             }
         }
 
-    public static async Task IterAsync(this IEnumerable @this, Func<object, Task> act)
-    {
+        public async Task IterAsync(Func<object, Task> act)
+        {
             foreach (var item in @this)
             {
                 await act(item);
             }
         }
 
-    public static async Task IterAsync(this IEnumerable @this, Func<object, int, Task> act)
-    {
+        public async Task IterAsync(Func<object, int, Task> act)
+        {
             var counter = 0;
             foreach (var item in @this)
             {
                 await act(item, counter++);
             }
         }
+    }
 
-    public static void Iter<T>(this IEnumerable<T> items, Action<T> act)
+    extension<T>(IEnumerable<T> items)
     {
+        public void Iter(Action<T> act)
+        {
             foreach (var item in items) act(item);
         }
 
-    public static void Iter<T>(this IEnumerable<T> items, Action<T, int> act)
-    {
+        public void Iter(Action<T, int> act)
+        {
             int counter = 0;
             foreach (var item in items)
             {
@@ -79,16 +87,16 @@ public static class Extensions
             }
         }
 
-    public static async Task IterAsync<T>(this IEnumerable<T> items, Func<T, Task> act)
-    {
+        public async Task IterAsync(Func<T, Task> act)
+        {
             foreach (var item in items)
             {
                 await act(item);
             }
         }
 
-    public static async Task IterAsync<T>(this IEnumerable<T> items, Func<T, int, Task> act)
-    {
+        public async Task IterAsync(Func<T, int, Task> act)
+        {
             int counter = 0;
             foreach (var item in items)
             {
@@ -96,4 +104,5 @@ public static class Extensions
                 counter++;
             }
         }
+    }
 }

@@ -69,6 +69,37 @@ public readonly struct Option<T> where T : notnull
     public static bool operator false(Option<T> option) => !option.IsSome;
 
 
+    public Unit Match(Action<T> some, Action none)
+    {
+        if (some == null) throw new ArgumentNullException(nameof(some));
+        if (none == null) throw new ArgumentNullException(nameof(none));
+
+        if (IsSome) some(_item);
+        else none();
+
+        return Unit.Default;
+    }
+
+    public Unit IfSome(Action<T> some)
+    {
+        if (some == null) throw new ArgumentNullException(nameof(some));
+
+        if (IsSome) some(_item);
+
+        return Unit.Default;
+    }
+
+    public T GetValueOrDefault(T fallback)
+    {
+        return IsSome ? _item : fallback;
+    }
+
+    public T GetValueOrDefault(Func<T> fallback)
+    {
+        if (fallback == null) throw new ArgumentNullException(nameof(fallback));
+        return IsSome ? _item : fallback();
+    }
+
     public void Deconstruct(out bool isSome, out T item)
     {
         isSome = IsSome;

@@ -333,4 +333,329 @@ public class OptionTests
         // assert the internal type is not nullable
         Assert.IsType<Option<Claim>>(missingClaim);
     }
+
+    [Theory, Gen]
+    public void MatchActionCallsSomeWhenSome(string input)
+    {
+        var sut = input.ToOption();
+        string captured = null;
+        bool noneCalled = false;
+
+        sut.Match(
+            some: x => captured = x,
+            none: () => noneCalled = true);
+
+        Assert.Equal(input, captured);
+        Assert.False(noneCalled);
+    }
+
+    [Fact]
+    public void MatchActionCallsNoneWhenNone()
+    {
+        var sut = Option<string>.None();
+        bool someCalled = false;
+        bool noneCalled = false;
+
+        sut.Match(
+            some: _ => someCalled = true,
+            none: () => noneCalled = true);
+
+        Assert.False(someCalled);
+        Assert.True(noneCalled);
+    }
+
+    [Theory, Gen]
+    public void IfSomeCallsActionWhenSome(string input)
+    {
+        var sut = input.ToOption();
+        string captured = null;
+
+        sut.IfSome(x => captured = x);
+
+        Assert.Equal(input, captured);
+    }
+
+    [Fact]
+    public void IfSomeDoesNothingWhenNone()
+    {
+        var sut = Option<string>.None();
+        bool called = false;
+
+        sut.IfSome(_ => called = true);
+
+        Assert.False(called);
+    }
+
+    [Fact]
+    public void MatchActionReturnsUnit()
+    {
+        var sut = "test".ToOption();
+
+        var result = sut.Match(
+            some: _ => { },
+            none: () => { });
+
+        Assert.Equal(Unit.Default, result);
+    }
+
+    [Fact]
+    public void IfSomeReturnsUnit()
+    {
+        var sut = "test".ToOption();
+
+        var result = sut.IfSome(_ => { });
+
+        Assert.Equal(Unit.Default, result);
+    }
+
+    // Map tests
+
+    [Theory, Gen]
+    public void MapTransformsSomeValue(string input)
+    {
+        var sut = input.ToOption();
+
+        var actual = sut.Map(x => x.Length);
+
+        Assert.Equal(input.Length, actual.GetValue(x => x));
+    }
+
+    [Fact]
+    public void MapOnNoneReturnsNone()
+    {
+        var sut = Option<string>.None();
+
+        var actual = sut.Map(x => x.Length);
+
+        Assert.True(actual.IsNone);
+    }
+
+    [Theory, Gen]
+    public void MapCanChangeType(int input)
+    {
+        var sut = input.ToOption();
+
+        var actual = sut.Map(x => x.ToString());
+
+        Assert.Equal(input.ToString(), actual.GetValue(x => x));
+    }
+
+    // GetValueOrDefault tests
+
+    [Theory, Gen]
+    public void GetValueOrDefaultReturnsSomeValue(string input)
+    {
+        var sut = input.ToOption();
+
+        var actual = sut.GetValueOrDefault("fallback");
+
+        Assert.Equal(input, actual);
+    }
+
+    [Fact]
+    public void GetValueOrDefaultReturnsFallbackForNone()
+    {
+        var sut = Option<string>.None();
+
+        var actual = sut.GetValueOrDefault("fallback");
+
+        Assert.Equal("fallback", actual);
+    }
+
+    [Theory, Gen]
+    public void GetValueOrDefaultFuncReturnsSomeValue(string input)
+    {
+        var sut = input.ToOption();
+
+        var actual = sut.GetValueOrDefault(() => "fallback");
+
+        Assert.Equal(input, actual);
+    }
+
+    [Fact]
+    public void GetValueOrDefaultFuncReturnsFallbackForNone()
+    {
+        var sut = Option<string>.None();
+
+        var actual = sut.GetValueOrDefault(() => "fallback");
+
+        Assert.Equal("fallback", actual);
+    }
+
+    [Fact]
+    public void GetValueOrDefaultFuncIsLazy()
+    {
+        var sut = "present".ToOption();
+        bool factoryCalled = false;
+
+        sut.GetValueOrDefault(() =>
+        {
+            factoryCalled = true;
+            return "fallback";
+        });
+
+        Assert.False(factoryCalled);
+    }
+
+    // Where tests
+
+    [Theory, Gen]
+    public void WhereKeepsSomeWhenPredicatePasses(string input)
+    {
+        var sut = input.ToOption();
+
+        var actual = sut.Where(x => x.Length > 0);
+
+        Assert.True(actual.IsSome);
+        Assert.Equal(input, actual.GetValue(x => x));
+    }
+
+    [Theory, Gen]
+    public void WhereConvertsToNoneWhenPredicateFails(string input)
+    {
+        var sut = input.ToOption();
+
+        var actual = sut.Where(_ => false);
+
+        Assert.True(actual.IsNone);
+    }
+
+    [Fact]
+    public void WhereOnNoneRemainsNone()
+    {
+        var sut = Option<string>.None();
+
+        var actual = sut.Where(x => x.Length > 0);
+
+        Assert.True(actual.IsNone);
+    }
+
+    // Tap tests
+
+    [Theory, Gen]
+    public void TapExecutesActionOnSome(string input)
+    {
+        var sut = input.ToOption();
+        string captured = null;
+
+        var result = sut.Tap(x => captured = x);
+
+        Assert.Equal(input, captured);
+        Assert.True(result.IsSome);
+        Assert.Equal(input, result.GetValue(x => x));
+    }
+
+    [Fact]
+    public void TapDoesNotExecuteOnNone()
+    {
+        var sut = Option<string>.None();
+        bool called = false;
+
+        var result = sut.Tap(_ => called = true);
+
+        Assert.False(called);
+        Assert.True(result.IsNone);
+    }
+
+    [Theory, Gen]
+    public void TapReturnsSameOptionForChaining(string input)
+    {
+        var sut = input.ToOption();
+
+        var result = sut
+            .Tap(_ => { })
+            .Map(x => x.Length);
+
+        Assert.Equal(input.Length, result.GetValue(x => x));
+    }
+
+    // Select / query syntax tests
+
+    [Theory, Gen]
+    public void SelectTransformsSomeValue(string input)
+    {
+        var sut = input.ToOption();
+
+        var actual = sut.Select(x => x.Length);
+
+        Assert.Equal(input.Length, actual.GetValue(x => x));
+    }
+
+    [Fact]
+    public void SelectOnNoneReturnsNone()
+    {
+        var sut = Option<string>.None();
+
+        var actual = sut.Select(x => x.Length);
+
+        Assert.True(actual.IsNone);
+    }
+
+    [Theory, Gen]
+    public void CanUseSimpleSelectQuerySyntax(string input)
+    {
+        var sut = input.ToOption();
+
+        var actual =
+            from x in sut
+            select x.ToUpper();
+
+        Assert.Equal(input.ToUpper(), actual.GetValue(x => x));
+    }
+
+    [Theory, Gen]
+    public void CanUseLetBindingInQuerySyntax(string one, string two)
+    {
+        var a = one.ToOption();
+        var b = two.ToOption();
+
+        var actual =
+            from aa in a
+            let upper = aa.ToUpper()
+            from bb in b
+            select upper + bb;
+
+        Assert.Equal(one.ToUpper() + two, actual.GetValue(x => x));
+    }
+
+    [Theory, Gen]
+    public void LetBindingWithNoneShortCircuits(string one)
+    {
+        var a = one.ToOption();
+        var b = Option<string>.None();
+
+        var actual =
+            from aa in a
+            let upper = aa.ToUpper()
+            from bb in b
+            select upper + bb;
+
+        Assert.True(actual.IsNone);
+    }
+
+    [Theory, Gen]
+    public void CanUseWhereInQuerySyntax(string input)
+    {
+        var sut = input.ToOption();
+
+        var actual =
+            from x in sut
+            where x.Length > 0
+            select x;
+
+        Assert.Equal(input, actual.GetValue(x => x));
+    }
+
+    [Fact]
+    public void WhereInQuerySyntaxFiltersToNone()
+    {
+        var sut = "test".ToOption();
+
+        var actual =
+            from x in sut
+            where x.Length > 100
+            select x;
+
+        Assert.True(actual.IsNone);
+    }
 }

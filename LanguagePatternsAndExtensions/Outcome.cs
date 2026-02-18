@@ -27,7 +27,7 @@ public readonly struct Outcome<TValue> : IEquatable<Outcome<TValue>>
     {
         unchecked
         {
-            var hashCode = EqualityComparer<TValue>.Default.GetHashCode(_value);
+            var hashCode = _value is not null ? EqualityComparer<TValue>.Default.GetHashCode(_value) : 0;
             hashCode = (hashCode * 397) ^ (ErrorMessage != null ? StringComparer.InvariantCulture.GetHashCode(ErrorMessage) : 0);
             hashCode = (hashCode * 397) ^ Succeeded.GetHashCode();
             return hashCode;
@@ -63,7 +63,7 @@ public readonly struct Outcome<TValue> : IEquatable<Outcome<TValue>>
         if (string.IsNullOrWhiteSpace(errorMessage))
             throw new ArgumentException("Error message cannot be empty", nameof(errorMessage));
 
-        var failure = new Outcome<TValue>(default, false)
+        var failure = new Outcome<TValue>(default!, false)
         {
             ErrorMessage = errorMessage
         };
@@ -220,8 +220,8 @@ public readonly struct Outcome<TSuccess, TFailure> : IEquatable<Outcome<TSuccess
     {
         unchecked
         {
-            var hashCode = EqualityComparer<TSuccess>.Default.GetHashCode(_value);
-            hashCode = (hashCode * 397) ^ EqualityComparer<TFailure>.Default.GetHashCode(_error);
+            var hashCode = _value is not null ? EqualityComparer<TSuccess>.Default.GetHashCode(_value) : 0;
+            hashCode = (hashCode * 397) ^ (_error is not null ? EqualityComparer<TFailure>.Default.GetHashCode(_error) : 0);
             hashCode = (hashCode * 397) ^ Succeeded.GetHashCode();
             return hashCode;
         }
@@ -271,7 +271,7 @@ public readonly struct Outcome<TSuccess, TFailure> : IEquatable<Outcome<TSuccess
     /// </example>
     public static Outcome<TSuccess, TFailure> Success(TSuccess value)
     {
-        return new Outcome<TSuccess, TFailure>(value, default, true);
+        return new Outcome<TSuccess, TFailure>(value, default!, true);
     }
 
     /// <summary>
@@ -284,7 +284,7 @@ public readonly struct Outcome<TSuccess, TFailure> : IEquatable<Outcome<TSuccess
     /// </example>
     public static Outcome<TSuccess, TFailure> Failure(TFailure error)
     {
-        return new Outcome<TSuccess, TFailure>(default, error, false);
+        return new Outcome<TSuccess, TFailure>(default!, error, false);
     }
 
     /// <summary>
