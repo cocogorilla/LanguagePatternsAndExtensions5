@@ -2,6 +2,7 @@
 using AutoFixture.Idioms;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -1099,5 +1100,136 @@ public class OutcomeTests
 
         Assert.False(called);
         Assert.Equal(Failure.Nok<string, CustomError>(error), actual);
+    }
+
+    // Implicit conversion tests (Outcome<TValue>)
+
+    [Theory, Gen]
+    public void ImplicitConversionCreatesSuccess(int value)
+    {
+        Outcome<int> sut = value;
+
+        Assert.True(sut.IsSuccess);
+        Assert.Equal(value, sut.GetValue(x => x));
+    }
+
+    [Theory, Gen]
+    public void ImplicitConversionEqualsExplicitSuccess(string value)
+    {
+        Outcome<string> implicit_ = value;
+        var explicit_ = Success.Of(value);
+
+        Assert.Equal(explicit_, implicit_);
+    }
+
+    [Fact]
+    public void ImplicitConversionWidensToInterfaceType()
+    {
+        var concreteList = new List<int> { 1, 2, 3 };
+
+        Outcome<IReadOnlyList<int>> sut = concreteList;
+
+        Assert.True(sut.IsSuccess);
+        sut.Match(
+            x => Assert.Equal(3, x.Count),
+            _ => Assert.Fail("should be success"));
+    }
+
+    [Fact]
+    public void ImplicitConversionWorksInSwitchExpression()
+    {
+        var flag = true;
+
+        Outcome<IReadOnlyList<int>> result = flag switch
+        {
+            true => new List<int> { 1, 2, 3 },
+            false => new ReadOnlyCollection<int>([4, 5])
+        };
+
+        Assert.True(result.IsSuccess);
+        result.Match(
+            x => Assert.Equal(3, x.Count),
+            _ => Assert.Fail("should be success"));
+    }
+
+    [Fact]
+    public void ImplicitConversionWorksInTernary()
+    {
+        var useFirst = true;
+
+        Outcome<IEnumerable<int>> result = useFirst
+            ? new List<int> { 1 }
+            : new HashSet<int> { 2, 3 };
+
+        Assert.True(result.IsSuccess);
+    }
+
+    [Theory, Gen]
+    public void ImplicitConversionPreservesHashCodeEquality(int value)
+    {
+        Outcome<int> implicit_ = value;
+        var explicit_ = Success.Of(value);
+
+        Assert.Equal(explicit_.GetHashCode(), implicit_.GetHashCode());
+    }
+
+    // Implicit conversion tests (Outcome<TSuccess, TFailure>)
+
+    [Theory, Gen]
+    public void ImplicitConversionGenericCreatesSuccess(int value)
+    {
+        Outcome<int, CustomError> sut = value;
+
+        Assert.True(sut.IsSuccess);
+        Assert.Equal(value, sut.Match(x => x, _ => throw new Exception("should be success")));
+    }
+
+    [Theory, Gen]
+    public void ImplicitConversionGenericEqualsExplicitSuccess(string value)
+    {
+        Outcome<string, CustomError> implicit_ = value;
+        var explicit_ = Success.Of<string, CustomError>(value);
+
+        Assert.Equal(explicit_, implicit_);
+    }
+
+    [Fact]
+    public void ImplicitConversionGenericWidensToInterfaceType()
+    {
+        var concreteList = new List<string> { "a", "b" };
+
+        Outcome<IReadOnlyList<string>, CustomError> sut = concreteList;
+
+        Assert.True(sut.IsSuccess);
+        sut.Match(
+            x => Assert.Equal(2, x.Count),
+            _ => Assert.Fail("should be success"));
+    }
+
+    [Fact]
+    public void ImplicitConversionGenericWorksInSwitchExpression()
+    {
+        var flag = true;
+
+        Outcome<IReadOnlyList<int>, string> result = flag switch
+        {
+            true => new List<int> { 10, 20 },
+            false => new ReadOnlyCollection<int>([30])
+        };
+
+        Assert.True(result.IsSuccess);
+        result.Match(
+            x => Assert.Equal(2, x.Count),
+            _ => Assert.Fail("should be success"));
+    }
+
+    [Theory, Gen]
+    public void FailureStillRequiresExplicitConstruction(string error)
+    {
+        var success = Success.Of(42);
+        var failure = Failure.Nok<int>(error);
+
+        Assert.True(success.IsSuccess);
+        Assert.True(failure.IsFailure);
     }
 }

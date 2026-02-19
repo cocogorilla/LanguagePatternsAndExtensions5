@@ -44,6 +44,8 @@ public readonly struct Outcome<TValue> : IEquatable<Outcome<TValue>>
         return !Equals(left, right);
     }
 
+    public static implicit operator Outcome<TValue>(TValue value) => Success(value);
+
     private Outcome(TValue value, bool isSuccess)
     {
         if (isSuccess && value == null)
@@ -248,6 +250,8 @@ public readonly struct Outcome<TSuccess, TFailure> : IEquatable<Outcome<TSuccess
     {
         return !Equals(left, right);
     }
+
+    public static implicit operator Outcome<TSuccess, TFailure>(TSuccess value) => Success(value);
 
     // Private constructor
     private Outcome(TSuccess value, TFailure failure, bool isSuccess)
