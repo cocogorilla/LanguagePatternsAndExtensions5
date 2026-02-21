@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using AutoFixture;
 using Xunit;
 using static LanguagePatternsAndExtensions.Option<string>;
@@ -657,5 +658,81 @@ public class OptionTests
             select x;
 
         Assert.True(actual.IsNone);
+    }
+
+    // Async Tap tests
+
+    [Theory, Gen]
+    public async Task AsyncTapCallsActionOnSome(string value)
+    {
+        var called = false;
+        var taskOption = Task.FromResult(value.ToOption());
+
+        var result = await taskOption.Tap(async x =>
+        {
+            await Task.Yield();
+            called = true;
+        });
+
+        Assert.True(called);
+        Assert.True(result.IsSome);
+    }
+
+    [Fact]
+    public async Task AsyncTapSkipsActionOnNone()
+    {
+        var called = false;
+        var taskOption = Task.FromResult(Option<string>.None());
+
+        var result = await taskOption.Tap(async x =>
+        {
+            await Task.Yield();
+            called = true;
+        });
+
+        Assert.False(called);
+        Assert.True(result.IsNone);
+    }
+
+    [Theory, Gen]
+    public async Task AsyncTapPassesThroughValue(string value)
+    {
+        var taskOption = Task.FromResult(value.ToOption());
+
+        var result = await taskOption.Tap(async x => await Task.Yield());
+
+        Assert.Equal(value.ToOption(), result);
+    }
+
+    // Async IfSome tests
+
+    [Theory, Gen]
+    public async Task AsyncIfSomeCallsActionOnSome(string value)
+    {
+        var captured = "";
+        var taskOption = Task.FromResult(value.ToOption());
+
+        await taskOption.IfSome(async x =>
+        {
+            await Task.Yield();
+            captured = x;
+        });
+
+        Assert.Equal(value, captured);
+    }
+
+    [Fact]
+    public async Task AsyncIfSomeSkipsActionOnNone()
+    {
+        var called = false;
+        var taskOption = Task.FromResult(Option<string>.None());
+
+        await taskOption.IfSome(async x =>
+        {
+            await Task.Yield();
+            called = true;
+        });
+
+        Assert.False(called);
     }
 }

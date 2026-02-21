@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace LanguagePatternsAndExtensions;
 
@@ -64,5 +65,26 @@ public static class OptionExtensions
     public static Option<T> ToOption<T>(this T? item) where T : struct
     {
         return item?.ToOption() ?? Option<T>.None();
+    }
+
+    extension<TSource>(Task<Option<TSource>> sourceTask) where TSource : notnull
+    {
+        public async Task<Option<TSource>> Tap(Func<TSource, Task> action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            var source = await sourceTask.ConfigureAwait(false);
+            if (source.IsSome)
+                await action(source.Match(some: x => x, nothing: default!)).ConfigureAwait(false);
+            return source;
+        }
+
+        public async Task<Unit> IfSome(Func<TSource, Task> action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            var source = await sourceTask.ConfigureAwait(false);
+            if (source.IsSome)
+                await action(source.Match(some: x => x, nothing: default!)).ConfigureAwait(false);
+            return Unit.Default;
+        }
     }
 }
