@@ -74,7 +74,7 @@ public static class OptionExtensions
             ArgumentNullException.ThrowIfNull(action);
             var source = await sourceTask.ConfigureAwait(false);
             if (source.IsSome)
-                await action(source.Match(some: x => x, nothing: default!)).ConfigureAwait(false);
+                await action(source.GetValueOrDefault(default(TSource)!)).ConfigureAwait(false);
             return source;
         }
 
@@ -83,7 +83,7 @@ public static class OptionExtensions
             ArgumentNullException.ThrowIfNull(action);
             var source = await sourceTask.ConfigureAwait(false);
             if (source.IsSome)
-                await action(source.Match(some: x => x, nothing: default!)).ConfigureAwait(false);
+                await action(source.GetValueOrDefault(default(TSource)!)).ConfigureAwait(false);
             return Unit.Default;
         }
     }

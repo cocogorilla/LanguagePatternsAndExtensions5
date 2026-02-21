@@ -660,6 +660,30 @@ public class OptionTests
         Assert.True(actual.IsNone);
     }
 
+    // Proves Match cannot be used to extract values with a null fallback,
+    // even when the option is Some, because Match eagerly validates 'nothing'.
+    // This is why async Tap/IfSome use GetValueOrDefault instead of Match.
+
+    [Theory, Gen]
+    public void MatchThrowsOnNullNothingEvenWhenSome(string value)
+    {
+        var option = value.ToOption();
+        Assert.True(option.IsSome);
+
+        Assert.Throws<ArgumentNullException>(() =>
+            option.Match(some: x => x, nothing: default(string)!));
+    }
+
+    [Theory, Gen]
+    public void GetValueOrDefaultDoesNotThrowOnNullFallbackWhenSome(string value)
+    {
+        var option = value.ToOption();
+        Assert.True(option.IsSome);
+
+        var result = option.GetValueOrDefault(default(string)!);
+        Assert.Equal(value, result);
+    }
+
     // Async Tap tests
 
     [Theory, Gen]
